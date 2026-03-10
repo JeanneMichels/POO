@@ -8,7 +8,7 @@ mensagem = input("mensagem do commit: ")
 while(len(mensagem) < 5):
     print("mensagem muito pequena, digite mais...😑")
     mensagem = input("mensagem do commit: ")
-    os.system(mensagem)
+    
 comando2 = f"git commit -m {mensagem}"
 os.system(comando2)
 comando3 = "git push"
