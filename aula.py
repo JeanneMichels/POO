@@ -1,20 +1,36 @@
-#print('')
-#nome = input("nome: ")
-#idade = int(input("idade: "))
-#salario = float(input('salarioR$'))
-#print('Opa!', nome,'Ce ta bom?', 'oce tem', idade, 'anos, ta velho kk')
-#print('seu salario é: ', salario, 'ta pobre ksksk')
+import arcade
+ALTURA = 600
+LARGURA = 800
+TITULO = "BAGUIO"
 
-#print(f"ola {nome} voce tem  {idade} anos")
-#if(salario == 10000 ):
-    #print(f"voce ganha muito mal, seu pobre. Seu salariop é R${salario: .2f} ")
+class Player(arcade.Sprite):
+    def __init__(self):
+        super().__init__("sonic_direita.png", scale=1)
+        self.textura_direita = arcade.load_texture("sonic_direita.png")
+        self.textura_esquerda = arcade.load_texture("sonic_esquerda.png")
 
-#elif(salario == 10000 or 20000):
-    ###print(f"voce ganha mal pra caralho kk R$: {salario: .2f}")
+        def update(self):
+            pass
 
-print(f"digite um numero ")
-numero = int(input("numero:"))   
-if(numero > 100):
-    print(f"o numero foi dividido por dois:{numero // 2}")
-else:
-    print(f"o numero é: {numero}")
+class JanelaJogo(arcade.Window):
+    def __init__(self):
+        super().__init__(LARGURA, ALTURA, TITULO)
+        arcade.set_background_color((0, 100, 30))
+        self.personagem = Player()
+        self.personagem.center_x =  100
+        self.personagem.center_y = 200
+
+    def on_draw(self) :
+        self.clear()
+        arcade.draw_sprite(self.personagem)
+    
+    def on_update(self, delta_time):
+        pass
+
+
+def roda():
+    tela = JanelaJogo()
+    arcade.run()
+
+if __name__ == "__main__": 
+    roda()
