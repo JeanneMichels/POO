@@ -81,8 +81,6 @@ class Tartaruga(arcade.Sprite):
         self.velocidade_fuga = 4
         self.textura_direita = arcade.load_texture("tartaruga_direita.png")
         self.textura_esquerda = arcade.load_texture("tartaruga_esquerda.png")
-        self.textura_baixo = arcade.load_texture("tubarão_baixo.png")
-        self.textura_cima = arcade.load_texture("tubarão_cima.png")
 
     def update_fuga(self, jogador):
         vetor_x = self.center_x - jogador.center_x
@@ -92,11 +90,9 @@ class Tartaruga(arcade.Sprite):
             self.change_x = (vetor_x / distancia) * self.velocidade_fuga
             self.change_y = (vetor_y / distancia) * self.velocidade_fuga
 
-    def update(self):
+    def update(self, delta_time=0.0):
         self.center_x += self.change_x
         self.center_y += self.change_y
-        
-
         if self.change_x > 0:
             self.texture = self.textura_direita
         elif self.change_x < 0:
@@ -108,7 +104,6 @@ class Tartaruga(arcade.Sprite):
         elif self.right >= 800:
             self.right = 800
             self.change_x *= -1
-            
         if self.bottom <= 0:
             self.bottom = 0
             self.change_y *= -1
@@ -144,6 +139,7 @@ class TelaInicial(arcade.View):
             arcade.draw_text("3. Na Fase 2, capture as tartarugas velozes para vencer.", 50, 280, arcade.color.WHITE, 16)
             arcade.draw_text("4. Os animais tentarão fugir de você se você chegar muito perto!", 50, 240, arcade.color.WHITE, 16)
             arcade.draw_text("5. Seja o mais rápido possível para terminar com o menor tempo!", 50, 200, arcade.color.WHITE, 16)
+            arcade.draw_text("6. Desenvolvido por Jeanne Michels D Aviz e Victoria Dias Goes.", 50, 165, arcade.color.WHITE, 16)
             
            
             arcade.draw_text("Pressione [M] ou [ESC] para Voltar ao Menu", LARGURA / 2, 100, arcade.color.LIGHT_GRAY, 14, anchor_x="center")
