@@ -23,7 +23,8 @@ class Player(arcade.Sprite):
             self.texture = self.textura_cima
         elif self.change_y < 0:
             self.texture = self.textura_baixo
-        elif self.change_x > 0:
+        
+        if self.change_x > 0:
             self.texture = self.textura_direita
         elif self.change_x < 0:
             self.texture = self.textura_esquerda
@@ -80,6 +81,8 @@ class Tartaruga(arcade.Sprite):
         self.velocidade_fuga = 4
         self.textura_direita = arcade.load_texture("tartaruga_direita.png")
         self.textura_esquerda = arcade.load_texture("tartaruga_esquerda.png")
+        self.textura_baixo = arcade.load_texture("tubarão_baixo.png")
+        self.textura_cima = arcade.load_texture("tubarão_cima.png")
 
     def update_fuga(self, jogador):
         vetor_x = self.center_x - jogador.center_x
@@ -89,19 +92,23 @@ class Tartaruga(arcade.Sprite):
             self.change_x = (vetor_x / distancia) * self.velocidade_fuga
             self.change_y = (vetor_y / distancia) * self.velocidade_fuga
 
-    def update(self, delta_time):
+    def update(self):
         self.center_x += self.change_x
         self.center_y += self.change_y
+        
+
         if self.change_x > 0:
             self.texture = self.textura_direita
         elif self.change_x < 0:
             self.texture = self.textura_esquerda
+            
         if self.left <= 0:
             self.left = 0
             self.change_x *= -1
         elif self.right >= 800:
             self.right = 800
             self.change_x *= -1
+            
         if self.bottom <= 0:
             self.bottom = 0
             self.change_y *= -1
@@ -122,7 +129,7 @@ class TelaInicial(arcade.View):
         
         if not self.exibindo_objetivos:
            
-            arcade.draw_text("COLETOR DE MOEDAS", LARGURA / 2, 420, arcade.color.WHITE, 32, anchor_x="center", bold=True)
+            arcade.draw_text("COMEDOR DE PEIXES", LARGURA / 2, 420, arcade.color.WHITE, 32, anchor_x="center", bold=True)
             
             arcade.draw_text("Pressione [J] para Jogar", LARGURA / 2, 320, arcade.color.LIGHT_SEA_GREEN, 18, anchor_x="center")
             arcade.draw_text("Pressione [O] para Ver os Objetivos", LARGURA / 2, 270, arcade.color.LIGHT_SEA_GREEN, 18, anchor_x="center")
@@ -161,14 +168,15 @@ class TelaInicial(arcade.View):
 
 class TelaJogo(arcade.View):
     def __init__(self):
-       
         super().__init__()
-        arcade.set_background_color(arcade.color.AMAZON)
+        arcade.set_background_color(arcade.color.LIGHT_BLUE)
         
-       
+        self.cenario_fase1 = None
+        self.cenario_fase2 = None
+        
         self.jogador = None
         self.sprite_jog = None
-        self.velocidade = 20
+        self.velocidade = 6 
         self.pontuacao = 0
         self.cronometro = 0.0
         self.fase_1_concluida = False
@@ -272,9 +280,15 @@ class TelaJogo(arcade.View):
                     self.window.show_view(nova_tela)
 
     def on_key_press(self, key, modifiers):
-        if key == arcade.key.R:self.setup()
-        if key == arcade.key.J and self.fase_1_concluida:self.iniciar_fase_2()
-            
+        if key == arcade.key.R:
+            self.setup()
+        if key == arcade.key.J and self.fase_1_concluida:
+            self.iniciar_fase_2()
+
+        if key == arcade.key.ESCAPE:
+            menu_inicial = TelaInicial()
+            self.window.show_view(menu_inicial)
+            return  
         if key == arcade.key.LEFT or key == arcade.key.A:
             self.jogador.change_x = -self.velocidade
         elif key == arcade.key.RIGHT or key == arcade.key.D:
@@ -283,8 +297,13 @@ class TelaJogo(arcade.View):
             self.jogador.change_y = self.velocidade
         elif key == arcade.key.DOWN or key == arcade.key.S:
             self.jogador.change_y = -self.velocidade 
-            if key == arcade.key.ESCAPE:menu_inicial = TelaInicial()
-        self.window.show_view(menu_inicial)
+
+    def on_key_release(self, key, modifiers):
+        if key in [arcade.key.LEFT,arcade.key.A, arcade.key.RIGHT, arcade.key.D]:
+            self.jogador.change_x = 0
+
+        if key in [arcade.key.UP,arcade.key.W, arcade.key.DOWN, arcade.key.S]:
+            self.jogador.change_y = 0
 
 
 def executar():
