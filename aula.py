@@ -319,7 +319,7 @@ class TelaJogo(arcade.View):
         self.lista_orcas.clear()
         self.cronometro_fase3 = 10.0 
         
-        for i in range(3):
+        for i in range(1):
             orca = Orca("orca_direita.png", scale=1.2)
             orca.center_x = random.randint(100, 700)
             orca.center_y = random.randint(100, 500)
