@@ -1,4 +1,3 @@
-
 import arcade
 import random
 import math
@@ -10,41 +9,95 @@ TITULO = "TUBAKU"
 
 class Player(arcade.Sprite):
     def __init__(self):
-        super().__init__("tubarão_direita.png", scale=1.2)
+        try:
+            super().__init__("tubarão_direita.png", scale=1.2)
+            self.textura_direita = arcade.load_texture("tubarão_direita.png")
+            self.textura_esquerda = arcade.load_texture("tubarão_esquerda.png")
+            self.textura_cima = arcade.load_texture("tubarão_cima.png")
+            self.textura_baixo = arcade.load_texture("tubarão_baixo.png")
+        except FileNotFoundError:
+            super().__init__(scale=1.2)
+            self.textura_direita = None
+            self.textura_esquerda = None
+            self.textura_cima = None
+            self.textura_baixo = None
 
-        self.textura_direita = arcade.load_texture("tubarão_direita.png")
-        self.textura_esquerda = arcade.load_texture("tubarão_esquerda.png")
-        self.textura_cima = arcade.load_texture("tubarão_cima.png")
-        self.textura_baixo = arcade.load_texture("tubarão_baixo.png")
+        self.cooldown_dano = 0.0
 
     def update(self, delta_time=0.0):
         self.center_x += self.change_x
         self.center_y += self.change_y
 
-        if self.change_y > 0:
+        if self.cooldown_dano > 0:
+            self.cooldown_dano -= delta_time
+
+        if self.textura_cima and self.change_y > 0:
             self.texture = self.textura_cima
-        elif self.change_y < 0:
+        elif self.textura_baixo and self.change_y < 0:
             self.texture = self.textura_baixo
 
-        if self.change_x > 0:
+        if self.textura_direita and self.change_x > 0:
             self.texture = self.textura_direita
-        elif self.change_x < 0:
+        elif self.textura_esquerda and self.change_x < 0:
             self.texture = self.textura_esquerda
 
         if self.left < 0:
             self.left = 0
-        elif self.right > 800:
-            self.right = 800
+        elif self.right > LARGURA:
+            self.right = LARGURA
 
         if self.bottom < 0:
             self.bottom = 0
-        elif self.top > 600:
-            self.top = 600
+        elif self.top > ALTURA:
+            self.top = ALTURA
+
+
+class Baiacu(arcade.Sprite):
+    def __init__(self, filename="baicu.png", scale=0.80):
+        super().__init__(scale=scale)
+
+        try:
+          
+            self.texture = arcade.load_texture(filename)
+        except (FileNotFoundError, Exception):
+          
+            self.texture = arcade.make_circle_texture(30, arcade.color.YELLOW)
+
+      
+        self.change_x = random.choice([-2, -1, 1, 2])
+        self.change_y = 0
+        self.gravidade = 0.25
+        self.forca_impulso = 8.0
+
+    def update(self, delta_time=0.0):
+        self.change_y -= self.gravidade
+
+        self.center_x += self.change_x
+        self.center_y += self.change_y
+
+        if self.bottom <= 0:
+            self.bottom = 0
+            self.change_y = self.forca_impulso
+
+        if self.top >= ALTURA:
+            self.top = ALTURA
+            self.change_y = 0
+
+        if self.left <= 0:
+            self.left = 0
+            self.change_x *= -1
+        elif self.right >= LARGURA:
+            self.right = LARGURA
+            self.change_x *= -1
 
 
 class Peixe(arcade.Sprite):
     def __init__(self, filename, scale):
-        super().__init__(filename, scale)
+        try:
+            super().__init__(filename, scale)
+        except FileNotFoundError:
+            super().__init__(scale=scale)
+
         self.change_x = random.choice([-4, -3, 3, 4])
         self.change_y = random.choice([-4, -3, 3, 4])
         self.raio_visao = 150
@@ -62,26 +115,32 @@ class Peixe(arcade.Sprite):
     def update(self, delta_time=0.0):
         self.center_x += self.change_x
         self.center_y += self.change_y
+
         if self.left <= 0:
             self.left = 0
             self.change_x *= -1
-        elif self.right >= 800:
-            self.right = 800
+        elif self.right >= LARGURA:
+            self.right = LARGURA
             self.change_x *= -1
+
         if self.bottom <= 0:
             self.bottom = 0
             self.change_y *= -1
-        elif self.top >= 600:
-            self.top = 600
+        elif self.top >= ALTURA:
+            self.top = ALTURA
             self.change_y *= -1
 
 
 class Orca(arcade.Sprite):
-    def __init__(self, filename, scale=0.8):
-        super().__init__("orca_direita.png", scale)
-
-        self.textura_direita = arcade.load_texture("orca_direita.png")
-        self.textura_esquerda = arcade.load_texture("orca_esquerda.png")
+    def __init__(self, filename, scale=1.3):
+        try:
+            super().__init__("orca_direita.png", scale)
+            self.textura_direita = arcade.load_texture("orca_direita.png")
+            self.textura_esquerda = arcade.load_texture("orca_esquerda.png")
+        except FileNotFoundError:
+            super().__init__(scale=scale)
+            self.textura_direita = None
+            self.textura_esquerda = None
 
         self.change_x = random.choice([-3.5, -2.5, 2.5, 3.5])
         self.change_y = random.choice([-3.5, -2.5, 2.5, 3.5])
@@ -90,35 +149,41 @@ class Orca(arcade.Sprite):
         self.center_x += self.change_x
         self.center_y += self.change_y
 
-        if self.change_x > 0:
+        if self.textura_direita and self.change_x > 0:
             self.texture = self.textura_direita
-        elif self.change_x < 0:
+        elif self.textura_esquerda and self.change_x < 0:
             self.texture = self.textura_esquerda
 
         if self.left <= 0:
             self.left = 0
             self.change_x *= -1
-        elif self.right >= 800:
-            self.right = 800
+        elif self.right >= LARGURA:
+            self.right = LARGURA
             self.change_x *= -1
 
         if self.bottom <= 0:
             self.bottom = 0
             self.change_y *= -1
-        elif self.top >= 600:
-            self.top = 600
+        elif self.top >= ALTURA:
+            self.top = ALTURA
             self.change_y *= -1
 
 
 class Tartaruga(arcade.Sprite):
     def __init__(self, filename, scale):
-        super().__init__(filename, scale)
+        try:
+            super().__init__(filename, scale)
+            self.textura_direita = arcade.load_texture("tartaruga_direita.png")
+            self.textura_esquerda = arcade.load_texture("tartaruga_esquerda.png")
+        except FileNotFoundError:
+            super().__init__(scale=scale)
+            self.textura_direita = None
+            self.textura_esquerda = None
+
         self.change_x = random.choice([-6, 6])
         self.change_y = random.choice([-6, 6])
         self.raio_visao = 180
         self.velocidade_fuga = 4
-        self.textura_direita = arcade.load_texture("tartaruga_direita.png")
-        self.textura_esquerda = arcade.load_texture("tartaruga_esquerda.png")
 
     def update_fuga(self, jogador):
         vetor_x = self.center_x - jogador.center_x
@@ -131,25 +196,25 @@ class Tartaruga(arcade.Sprite):
     def update(self, delta_time=0.0):
         self.center_x += self.change_x
         self.center_y += self.change_y
-        if self.change_x > 0:
+
+        if self.textura_direita and self.change_x > 0:
             self.texture = self.textura_direita
-        elif self.change_x < 0:
+        elif self.textura_esquerda and self.change_x < 0:
             self.texture = self.textura_esquerda
 
         if self.left <= 0:
             self.left = 0
             self.change_x *= -1
-        elif self.right >= 800:
-            self.right = 800
+        elif self.right >= LARGURA:
+            self.right = LARGURA
             self.change_x *= -1
+
         if self.bottom <= 0:
             self.bottom = 0
             self.change_y *= -1
-        elif self.top >= 600:
-            self.top = 600
+        elif self.top >= ALTURA:
+            self.top = ALTURA
             self.change_y *= -1
-
-
 
 
 class TelaTextoFase1(arcade.View):
@@ -198,8 +263,8 @@ class TelaTextoFase2(arcade.View):
         self.clear()
         arcade.draw_text("FASE 2 CONCLUÍDA!", LARGURA / 2, 500,
                          arcade.color.YELLOW, 26, anchor_x="center", bold=True)
-        arcade.draw_text("CURIOSIDADE: TUBARÕES E TARTARUGAS MARINHAS", LARGURA /
-                         2, 440, arcade.color.WHITE, 18, anchor_x="center", bold=True)
+        arcade.draw_text("CURIOSIDADE: TUBARÕES E TARTARUGAS MARINHAS", LARGURA / 2,
+                         440, arcade.color.WHITE, 18, anchor_x="center", bold=True)
 
         texto = (
             "As tartarugas marinhas são presas de tubarões de grande porte (como o Tubarão-Tigre).\n\n"
@@ -229,7 +294,7 @@ class TelaTextoFase3(arcade.View):
 
     def on_draw(self):
         self.clear()
-        arcade.draw_text("VOCÊ SOBREVIVEU AS ORCAS!", LARGURA / 2,
+        arcade.draw_text("VOCÊ SOBREVIVEU ÀS ORCAS!", LARGURA / 2,
                          500, arcade.color.GREEN, 26, anchor_x="center", bold=True)
         arcade.draw_text("POR QUE AS ORCAS CAÇAM TUBARÕES?", LARGURA / 2,
                          440, arcade.color.WHITE, 18, anchor_x="center", bold=True)
@@ -244,15 +309,13 @@ class TelaTextoFase3(arcade.View):
         )
         arcade.draw_text(texto, LARGURA / 2, 280, arcade.color.LIGHT_GRAY,
                          14, anchor_x="center", multiline=True, width=700)
-        arcade.draw_text("Pressione [ESPAÇO] para ver os resultados!", LARGURA /
-                         2, 80, arcade.color.GOLD, 16, anchor_x="center", bold=True)
+        arcade.draw_text("Pressione [ESPAÇO] para ver os resultados!", LARGURA / 2,
+                         80, arcade.color.GOLD, 16, anchor_x="center", bold=True)
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.SPACE:
             tela_vitoria = TelaVitoria(self.pontuacao)
             self.window.show_view(tela_vitoria)
-
-
 
 
 class TelaInicial(arcade.View):
@@ -277,20 +340,13 @@ class TelaInicial(arcade.View):
         else:
             arcade.draw_text("OBJETIVOS DO JOGO", LARGURA / 2, 450,
                              arcade.color.YELLOW, 28, anchor_x="center", bold=True)
-            arcade.draw_text(
-                "1. Controle o Tubarão usando as setas do teclado ou W, A, S, D.", 50, 360, arcade.color.WHITE, 16)
-            arcade.draw_text(
-                "2. Na Fase 1, devore todos os peixes normais e dourados rápidos.", 50, 320, arcade.color.WHITE, 16)
-            arcade.draw_text(
-                "3. Na Fase 2, capture as tartarugas velozes para vencer.", 50, 280, arcade.color.WHITE, 16)
-            arcade.draw_text(
-                "4. Na Fase 3, fuja da orca por 10 segundos.", 50, 248, arcade.color.WHITE, 16)
-            arcade.draw_text(
-                "5. Os animais tentarão fugir de você se você chegar muito perto!", 50, 218, arcade.color.WHITE, 16)
-            arcade.draw_text(
-                "6. Seja rápido e coma todos os peixes e tartarugas!", 50, 185, arcade.color.WHITE, 16)
-            arcade.draw_text(
-                "7. Desenvolvido por Jeanne Michels D Aviz e Victoria Dias Goes.", 50, 155, arcade.color.WHITE, 16)
+            arcade.draw_text("1. Controle o Tubarão usando as setas do teclado ou W, A, S, D.", 50, 360, arcade.color.WHITE, 16)
+            arcade.draw_text("2. Na Fase 1, devore os peixes, mas evite os baiacus!", 50, 320, arcade.color.WHITE, 16)
+            arcade.draw_text("3. Na Fase 2, capture as tartarugas velozes para vencer.", 50, 280, arcade.color.WHITE, 16)
+            arcade.draw_text("4. Na Fase 3, fuja da orca por 10 segundos.", 50, 248, arcade.color.WHITE, 16)
+            arcade.draw_text("5. Os animais tentarão fugir de você se você chegar muito perto!", 50, 218, arcade.color.WHITE, 16)
+            arcade.draw_text("6. Seja rápido e coma todos os peixes e tartarugas!", 50, 185, arcade.color.WHITE, 16)
+            arcade.draw_text("7. Desenvolvido por Jeanne Michels D Aviz e Victoria Dias Goes.", 50, 155, arcade.color.WHITE, 16)
             arcade.draw_text("Pressione [M] ou [ESC] para Voltar ao Menu",
                              LARGURA / 2, 100, arcade.color.LIGHT_GRAY, 14, anchor_x="center")
 
@@ -379,6 +435,7 @@ class TelaJogo(arcade.View):
         self.fase = 1
 
         self.lista_peixe = None
+        self.lista_baiacus = None
         self.lista_tartarugas = None
         self.lista_orcas = None
 
@@ -405,17 +462,18 @@ class TelaJogo(arcade.View):
         self.tempo_preparacao = 0.0
 
         self.lista_peixe = arcade.SpriteList()
+        self.lista_baiacus = arcade.SpriteList()
         self.lista_tartarugas = arcade.SpriteList()
         self.lista_orcas = arcade.SpriteList()
 
-        for i in range(10):
+        for _ in range(10):
             peixe = Peixe("peixe.png", scale=0.2)
             peixe.center_x = random.randint(50, 750)
             peixe.center_y = random.randint(50, 550)
             peixe.tipo = "normal"
             self.lista_peixe.append(peixe)
 
-        for i in range(10):
+        for _ in range(10):
             peixe_especial = Peixe("peixe.png", scale=0.2)
             peixe_especial.color = arcade.color.GOLD
             peixe_especial.center_x = random.randint(50, 750)
@@ -425,13 +483,20 @@ class TelaJogo(arcade.View):
             peixe_especial.tipo = "dourado"
             self.lista_peixe.append(peixe_especial)
 
+        for _ in range(2):
+            baiacu = Baiacu("baicu.png", scale=0.80)
+            baiacu.center_x = random.randint(100, 700)
+            baiacu.center_y = random.randint(300, 500)
+            self.lista_baiacus.append(baiacu)
+
     def iniciar_fase_2(self):
         self.fase = 2
         self.lista_peixe.clear()
+        self.lista_baiacus.clear()
         self.lista_tartarugas.clear()
         self.lista_orcas.clear()
 
-        for i in range(18):
+        for _ in range(18):
             tartaruga = Tartaruga("tartaruga_direita.png", scale=0.5)
             tartaruga.center_x = random.randint(50, 750)
             tartaruga.center_y = random.randint(50, 550)
@@ -440,6 +505,7 @@ class TelaJogo(arcade.View):
     def iniciar_fase_3(self):
         self.fase = 3
         self.lista_peixe.clear()
+        self.lista_baiacus.clear()
         self.lista_tartarugas.clear()
         self.lista_orcas.clear()
 
@@ -450,7 +516,8 @@ class TelaJogo(arcade.View):
         self.jogador.center_y = ALTURA / 2
         self.jogador.change_x = 0
         self.jogador.change_y = 0
-        for i in range(3):
+
+        for _ in range(3):
             orca = Orca("orca_direita.png", scale=1.2)
             orca.center_x = random.choice([100, 700])
             orca.center_y = random.choice([100, 500])
@@ -462,6 +529,7 @@ class TelaJogo(arcade.View):
         if self.fase == 1:
             self.background_color = arcade.color.SEA_BLUE
             self.lista_peixe.draw()
+            self.lista_baiacus.draw()
 
         elif self.fase == 2:
             if self.cenario_fase2:
@@ -492,21 +560,28 @@ class TelaJogo(arcade.View):
         if not self.jogador_vivo:
             return
 
-        self.sprite_jog.update()
+        self.sprite_jog.update(delta_time)
 
         if self.fase == 1:
             for peixe in self.lista_peixe:
                 peixe.update_fuga(self.jogador)
-                peixe.update()
+            self.lista_peixe.update()
+            self.lista_baiacus.update()
 
-            colisoes = arcade.check_for_collision_with_list(
+            colisoes_peixe = arcade.check_for_collision_with_list(
                 self.jogador, self.lista_peixe)
-            for peixe in colisoes:
+            for peixe in colisoes_peixe:
                 peixe.remove_from_sprite_lists()
                 if peixe.tipo == "dourado":
                     self.pontuacao += 30
                 else:
                     self.pontuacao += 10
+
+            colisoes_baiacu = arcade.check_for_collision_with_list(
+                self.jogador, self.lista_baiacus)
+            if colisoes_baiacu and self.jogador.cooldown_dano <= 0:
+                self.pontuacao = max(0, self.pontuacao - 2)
+                self.jogador.cooldown_dano = 1.0
 
             if len(self.lista_peixe) == 0:
                 tela_texto1 = TelaTextoFase1(self)
@@ -516,7 +591,7 @@ class TelaJogo(arcade.View):
         elif self.fase == 2:
             for tartaruga in self.lista_tartarugas:
                 tartaruga.update_fuga(self.jogador)
-                tartaruga.update()
+            self.lista_tartarugas.update()
 
             colisoes = arcade.check_for_collision_with_list(
                 self.jogador, self.lista_tartarugas)
